@@ -40,18 +40,7 @@ public class HandleClientCalls extends Thread {
     private void checkEndpoint(String type){
         String fileToFind = "src//main//resources//html//404.html";
         String contentType = "text/html";
-        /*
-        if (path.equals("/")) {
-        fileToFind = "src//main//resources//html//home.html";
-        }else if(path.equals("/js/home.js")){
-        contentType = "application/javascript";
-        fileToFind = "src//main//resources//js/home.js";
-        }else if (path.equals("/home.css")) {
-        //System.out.println("äädfsääfdsäfdäsfädsäfdsäfdsäfädsfädsäfdsäfds");
-        contentType = "text/css";
-        fileToFind = "src//main//resources//css/home.css";
-        }
-         */
+        
         switch (type) {
             case "js" -> {
                 contentType = "application/javascript";
@@ -71,8 +60,6 @@ public class HandleClientCalls extends Thread {
         try{
             sendHtmlResponse(fileToFind,contentType);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
         
     }
@@ -104,22 +91,22 @@ public class HandleClientCalls extends Thread {
     private void sendHtmlResponse(String fileName,String contentType) throws IOException {
         OutputStream outputStream = socket.getOutputStream();
         PrintWriter writer = new PrintWriter(outputStream, true);
-        BufferedReader fileReader = new BufferedReader(new FileReader(fileName));
-        String line;
-        StringBuilder htmlContent = new StringBuilder();
-        while ((line = fileReader.readLine()) != null) {
-            htmlContent.append(line).append("\n");
+        try (BufferedReader fileReader = new BufferedReader(new FileReader(fileName))) {
+            String line;
+            StringBuilder htmlContent = new StringBuilder();
+            while ((line = fileReader.readLine()) != null) {
+                htmlContent.append(line).append("\n");
+            }
+            
+            writer.println("HTTP/1.1 200 OK");
+            writer.println("Content-Type: " + contentType +";  charset=UTF-8");
+            writer.println();
+            
+            
+            writer.println(htmlContent.toString());
+            
+            writer.flush();
         }
-        // Send the HTTP response headers
-        writer.println("HTTP/1.1 200 OK");  // Status code
-        writer.println("Content-Type: " + contentType +";  charset=UTF-8");  // Content type for HTML
-        writer.println();  // Blank line separating headers and body
-
-        // Send the HTML response body
-        writer.println(htmlContent.toString());
-
-        writer.flush();  // Ensure the data is sent
-        fileReader.close(); 
         socket.close();
     }
 
